@@ -2,7 +2,7 @@ FROM arm64v8/ubuntu:focal
 
 MAINTAINER Jin
 
-SHELL ["/bin/sh", "-c"],
+SHELL ["/bin/sh", "-c"]
 
 # Default to supporting utf-8
 ENV LANG=C.UTF-8
