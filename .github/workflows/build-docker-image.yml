@@ -68,7 +68,7 @@ jobs:
             
       - name: Create tag
         uses: actions/github-script@v3
-        if: steps.get_latest_version.outputs.version != steps.get_local_version.outputs.result
+        if: steps.get_latest_version.outputs.version != '' && steps.get_local_version.outputs.result == ''
         with:
           github-token: ${{ github.token }}
           script: |
@@ -81,7 +81,7 @@ jobs:
           
       - name: Build and push
         uses: docker/build-push-action@v2
-        if: steps.get_latest_version.outputs.version != steps.get_local_version.outputs.result
+        if: steps.get_latest_version.outputs.version != '' && steps.get_local_version.outputs.result == ''
         with:
           file: ./Dockerfile
           context: .
