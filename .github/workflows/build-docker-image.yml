@@ -1,10 +1,9 @@
 name: Build Docker Image
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
-
+  push:
+    tags:
+      - '*'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,69 +23,28 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF:10}
         
       - name: Check Gitlab CE latest version
-        id: get_latest_version
+        id: get_version
         run: |
-          SEARCH_PAGES='3'
-          for i in $(seq 1 ${SEARCH_PAGES}); do
-              curl -s "https://packages.gitlab.com/gitlab/gitlab-ce?page=${i}" | grep "_arm64.deb" | grep -v '\-rc' | sed 's/.*>\(.*\)<.*/\1/' | sort -u | sed 's/gitlab-ce_\(.*\)_arm64.deb/\1/' >> version_list;
-          done
-          sort -rVu version_list -o version_list
-          LATEST_VERSION=$(cat version_list | sort -rV | head -n 1)
-          rm version_list
-          
           echo "PACKAGECLOUD_REPO=gitlab-ce" > ./RELEASE
           echo "RELEASE_PACKAGE=gitlab-ce" >> ./RELEASE
-          echo "RELEASE_VERSION=${LATEST_VERSION}" >> ./RELEASE
-          echo "DOWNLOAD_URL=https://packages.gitlab.com/gitlab/gitlab-ce/packages/ubuntu/focal/gitlab-ce_${LATEST_VERSION}_arm64.deb/download.deb" >> ./RELEASE
-          
-          echo "::set-output name=version::${LATEST_VERSION}"
-            
-      - name: Check Gitlab CE local version
-        uses: actions/github-script@v3
-        id: get_local_version
-        with:
-          github-token: ${{ github.token }}
-          result-encoding: string
-          script: |
-            let HAVE_TAG = false;
-            const tags = (await github.git.listMatchingRefs({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'tags'
-            })).data;
-            for (let tag of tags) {
-              if ((tag.ref).indexOf('${{ steps.get_latest_version.outputs.version }}') != -1) {
-                HAVE_TAG = true;
-              }
-            }
-            if (HAVE_TAG) {
-              return '${{ steps.get_latest_version.outputs.version }}' ;
-            }
-            return '';
-            
-      - name: Create tag
-        uses: actions/github-script@v3
-        if: steps.get_latest_version.outputs.version != '' && steps.get_local_version.outputs.result == ''
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            github.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.get_latest_version.outputs.version }}",
-              sha: context.sha
-            });
+          echo "RELEASE_VERSION=${{ steps.vars.outputs.tag }}-ce.0" >> ./RELEASE
+          echo "DOWNLOAD_URL=https://packages.gitlab.com/gitlab/gitlab-ce/packages/ubuntu/focal/gitlab-ce_${{ steps.vars.outputs.tag }}-ce.0_arm64.deb/download.deb" >> ./RELEASE
+          echo "::set-output name=version::${{ steps.vars.outputs.tag }}"
           
       - name: Build and push
         uses: docker/build-push-action@v2
-        if: steps.get_latest_version.outputs.version != '' && steps.get_local_version.outputs.result == ''
+        if: steps.get_version.outputs.version != ''
         with:
           file: ./Dockerfile
           context: .
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:${{ steps.get_latest_version.outputs.version }}
+            ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:${{ steps.get_version.outputs.version }}
             ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:latest
