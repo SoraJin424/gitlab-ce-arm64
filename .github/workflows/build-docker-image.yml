@@ -46,5 +46,5 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:${{ steps.get_version.outputs.version }}
+            ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:${{ steps.get_version.outputs.version }}-ce.0
             ${{ secrets.DOCKER_NS }}/gitlab-ce-arm64:latest
