@@ -12,7 +12,7 @@ jobs:
 
     steps:        
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -46,11 +46,11 @@ jobs:
           HAVE_TAG=false
           
           for tag in $(git tag); do
-            if [  "${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}" == "$tag" ]; then
+            if [  "${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}" = "$tag" ]; then
               HAVE_TAG=true
             fi
           done
-
+          
           if ! $HAVE_TAG; then
             git tag ${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}
             git push --tags
