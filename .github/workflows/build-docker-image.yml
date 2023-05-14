@@ -46,11 +46,14 @@ jobs:
           HAVE_TAG=false
           
           for tag in $(git tag); do
+            echo $tag
             if [  "${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}" = "$tag" ]; then
               HAVE_TAG=true
             fi
           done
-          
+
+          echo $HAVE_TAG
+
           if ! $HAVE_TAG; then
             git tag ${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}
             git push --tags
