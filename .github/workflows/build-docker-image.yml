@@ -44,10 +44,10 @@ jobs:
         if: steps.get_gitlab_ce_version.outputs.gitlab_ce_version != ''
         run: |
           HAVE_TAG=false
-          
+          GITLAB_CE_VERSION=${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}
           for tag in $(git tag); do
             echo $tag
-            if [  "${{ steps.get_gitlab_ce_version.outputs.gitlab_ce_version }}" = "$tag" ]; then
+            if [  "$GITLAB_CE_VERSION" == "$tag" ]; then
               HAVE_TAG=true
             fi
           done
