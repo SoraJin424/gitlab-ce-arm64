@@ -13,6 +13,9 @@ jobs:
     steps:        
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - name: Get tags
+        run: git fetch --tags origin
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
