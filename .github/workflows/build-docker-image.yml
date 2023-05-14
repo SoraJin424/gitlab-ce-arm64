@@ -28,7 +28,7 @@ jobs:
       
       - name: test
         run: |
-          git tag
+          echo $(git tag)
 
       # - name: Installing Dependencies
       #   run: |
