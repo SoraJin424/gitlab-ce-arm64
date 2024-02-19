@@ -38,7 +38,7 @@ jobs:
       - name: Get Gitlab CE Version
         id: get_gitlab_ce_version
         run: |
-          GITLAB_VERSION=$(curl -k -s https://api.rua.dev/versions/latest/gitlab | jq .data.version | sed s/\"//g)
+          GITLAB_VERSION=$(curl -k -s https://api.rua.dev/versions/gitlab/latest | jq .data.version | sed s/\"//g)
           echo $GITLAB_VERSION
           echo "gitlab_ce_version=$GITLAB_VERSION" >> $GITHUB_OUTPUT
         
